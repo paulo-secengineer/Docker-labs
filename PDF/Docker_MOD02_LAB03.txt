@@ -1,0 +1,27 @@
+Objetivo:
+
+Parar, iniciar e remover um container
+
+- Aprender a gerenciar o ciclo de vida de um container.
+- Parar, iniciar e remover containers corretamente.
+
+1 - Criar um container de teste:
+	docker run -d --name teste_lab nginx
+
+2 - Verificar se ele está rodando:
+	docker container ls
+
+3 - Parar o container:
+	docker stop teste_lab
+
+4 - Iniciar novamente o container:
+	docker start teste_lab
+
+5 - Reiniciar o container:
+	docker restart teste_lab
+
+6 - Remover um container específico:
+	docker rm teste_lab
+
+7 - Remover todos os containers parados:
+	docker rm $(docker ps -aq)

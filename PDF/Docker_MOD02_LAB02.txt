@@ -1,0 +1,27 @@
+Objetivo:
+
+Executar comandos dentro de um container (docker exec e docker run -it)
+
+- Executar comandos dentro de um container ativo usando docker exec.
+- Criar e acessar um container interativo com docker run -it.
+- Testar um container temporário com docker run --rm.
+
+1 - Criar e iniciar um container Nginx:
+	docker run --name exec_lab -d -p 8080:80 nginx 
+
+2 - Executar comandos dentro do container ativo:
+	docker exec exec_lab nginx -v
+	docker exec exec_lab ls /usr/share/nginx/html
+
+3 - Acessar o terminal do container:
+	docker exec -it exec_lab /bin/bash
+
+4 - Criar um container interativo desde o início:
+	docker run -it --name interativo_lab nginx /bin/bash
+
+5 - Rodar um container temporário para testes rápidos:
+	docker run --rm -it --name nginx_temp nginx /bin/bash
+
+O container não será salvo após sair do terminal (exit).
+Ideal para rodar comandos pontuais sem acumular containers desnecessários.
+Útil para testar configurações sem precisar limpar o ambiente depois.

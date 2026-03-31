@@ -1,0 +1,98 @@
+Objetivo:
+
+- Demonstrar como o isolamento de processos pode ser realizado utilizando o comando chroot. O aluno aprenderá a:
+- Criar manualmente um ambiente isolado.
+- Identificar dependências de binários com ldd.
+- Preparar o ambiente copiando arquivos essenciais.
+- Utilizar a ferramenta debootstrap para criar ambientes base Debian automaticamente.
+
+Pré-requisitos:
+
+- Um sistema Linux (recomendo uma VM ou um container Debian/Ubuntu)
+- Permissões de root (sudo)
+- Familiaridade básica com terminal
+
+Parte 1: Criar um ambiente isolado usando chroot
+
+Crie um diretório para o root do novo ambiente:
+	sudo mkdir -p /opt/chroot/tftec
+
+Tente executar o bash nesse ambiente (vai falhar):
+	sudo chroot /opt/chroot/tftec /bin/bash
+
+Isso ocorre porque o diretório /bin/bash não existe dentro do novo root. Vamos corrigir isso.
+
+Vamos copiar o binário:
+	sudo mkdir -p /opt/chroot/tftec/bin
+	sudo cp /bin/bash /opt/chroot/tftec/bin/
+
+Tente executar o bash nesse ambiente novamente:
+	sudo chroot /opt/chroot/tftec /bin/bash
+
+Conceito: binários e suas dependências
+
+Antes de simplesmente copiar o bash, precisamos saber quais arquivos ele depende. Usamos o ldd:
+	ldd /bin/bash
+
+Saída típica:
+	linux-vdso.so.1 (0x00007ffd...)
+	libtinfo.so.6 => /lib/x86_64-linux-gnu/libtinfo.so.6 (...)
+	libdl.so.2 => /lib/x86_64-linux-gnu/libdl.so.2 (...)
+	libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (...)
+	...
+
+Copie o binário do bash e suas dependências para o novo ambiente:
+	# Criar estrutura de diretórios
+		sudo mkdir -p /opt/chroot/tftec/{lib,lib64}
+		sudo mkdir -p /opt/chroot/tftec/lib/x86_64-linux-gnu
+
+
+	# Copiar as libs listadas pelo ldd
+		ldd /bin/bash
+
+Copie cada uma das libs listadas:
+	sudo cp /lib/x86_64-linux-gnu/libtinfo.so.6 /opt/chroot/tftec/lib/x86_64-linux-gnu/
+	sudo cp /lib/x86_64-linux-gnu/libc.so.6 /opt/chroot/tftec/lib/x86_64-linux-gnu/
+	sudo cp /lib64/ld-linux-x86-64.so.2 /opt/chroot/tftec/lib64/
+
+Verifique se alguma delas vai para lib64 (se sim, crie esse diretório também).
+
+Agora teste novamente o chroot:
+	sudo chroot /opt/chroot/tftec /bin/bash
+
+Sucesso! Agora você está em um ambiente isolado com bash funcional.
+
+Adicione o comando ls para enriquecer a shell:
+
+Veja dependências:
+	ldd /bin/ls
+
+Copie o binário e as libs necessárias:
+	sudo cp /bin/ls /opt/chroot/tftec/bin/
+	sudo cp /lib/x86_64-linux-gnu/libselinux.so.1 /opt/chroot/tftec/lib/x86_64-linux-gnu/
+	sudo cp /lib/x86_64-linux-gnu/libpcre2-8.so.0 /opt/chroot/tftec/lib/x86_64-linux-gnu/
+
+Teste:
+	sudo chroot /opt/chroot/tftec /bin/bash
+
+Pronto! Você agora tem um mini ambiente isolado com comandos básicos.
+
+Parte 2: Usar o debootstrap para criar uma base Debian
+
+O debootstrap é uma ferramenta que instala uma base Debian em um diretório — muito útil para ambientes chroot.
+
+Instale o debootstrap (caso não tenha):
+	sudo apt update
+	sudo apt install debootstrap
+
+Execute o debootstrap para instalar um sistema Debian mínimo:
+	sudo debootstrap stable /opt/chroot/debian http://deb.debian.org/debian
+
+Esse processo levará alguns minutos e instalará os pacotes essenciais do Debian.
+
+Use o chroot para acessar:
+	sudo chroot /opt/chroot/debian /bin/bash
+
+Agora você tem um ambiente Debian completo isolado.
+
+Compare o ambiente criado manualmente com o ambiente do debootstrap. Veja o tamanho, o número de binários e a usabilidade. Isso ajuda a entender a importância de ferramentas de automação de rootfs como o debootstrap (e mais tarde, as imagens de container).

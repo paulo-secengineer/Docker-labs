@@ -1,0 +1,103 @@
+Objetivo:
+
+- Baixar uma imagem com e sem tags específicas para entender a lógica do Docker Hub.
+- Rodar containers com base nessas imagens.
+- Usar docker inspect para examinar containers e imagens.
+- Listar imagens e verificar o uso de espaço com docker image ls e docker system df.
+- Remover imagens que não são mais necessárias.
+
+1. Baixar imagem sem especificar a tag (usa o latest por padrão)
+	docker pull nginx
+	docker run nginx
+
+Sempre que não especificar a tag, o Docker assumirá :latest automaticamente. É funcional, mas em produção recomenda-se evitar para garantir previsibilidade.
+	
+2. Baixar uma versão específica da imagem
+	docker pull nginx:1.25.3
+
+Isso garante que você estará utilizando exatamente aquela versão, sem surpresas por futuras atualizações do latest.
+
+3. Rodar os containers com as imagens baixadas
+
+	Rodar a versão mais recente (latest):
+		docker run --name nginx_latest -d -p 8082:80 nginx
+	
+	Rodar uma versão específica:
+		docker run --name nginx_v1253 -d -p 8083:80 nginx:1.25.3
+
+4. Inspecionar containers e imagens
+
+	Inspecionar container:
+		docker inspect nginx_latest
+
+	Inspecionar imagem diretamente:
+		docker inspect nginx:1.25.3
+
+Esses comandos retornam dados detalhados em formato JSON, como ponto de entrada, camadas da imagem, configurações de rede, volumes e mais.
+
+Usando jq para extrair informações específicas:
+
+	Ver IP do container:
+		docker inspect nginx_latest | jq '.[0].NetworkSettings.IPAddress'
+
+	Ver nome da imagem usada no container:
+		docker inspect nginx_latest | jq '.[0].Config.Image'
+
+	Ver hora de criação:
+		docker inspect nginx_latest | jq '.[0].Created'
+
+	Inspecionar uma imagem diretamente
+		docker inspect nginx:1.25.3
+
+	Ver camadas da imagem (layers):
+		docker inspect nginx:1.25.3 | jq '.[0].RootFS.Layers'
+
+	Ver tamanho total da imagem (em bytes):
+		docker inspect nginx:1.25.3 | jq '.[0].Size'
+
+	Ver o comando de entrada da imagem (Entrypoint):
+		docker inspect nginx:1.25.3 | jq '.[0].Config.Entrypoint'
+
+5. Listar imagens e containers
+
+	Listar todas as imagens locais:
+		docker images
+		docker image ls
+
+	Ver containers ativos e inativos:
+		docker container ls        # somente os containers ativos
+		docker container ls -a     # todos os containers, inclusive os parados
+		docker ps                  # versão legada do comando
+
+6. Verificar uso de espaço: docker system df
+
+	Esse comando exibe o uso de disco por imagens, containers, volumes e build cache:
+		docker system df
+
+Muito útil para saber quando é hora de fazer uma limpeza geral. Ideal também para identificar “imagens órfãs” ou containers esquecidos.
+
+7. Remover imagens não utilizadas
+
+	Remover uma imagem específica:
+		docker rmi nginx:1.25.3
+		docker stop <container>
+		
+	Forçar a remoção, mesmo se houver containers dependentes (cuidado!):
+		docker rmi -f nginx
+
+Untagged: nginx:1.25.3
+O Docker removeu o nome/tag da imagem, ou seja, nginx:1.25.3.
+
+Untagged: nginx@sha256:...
+O Docker também removeu a referência digest (sha256) usada, por exemplo, se a imagem foi puxada com docker pull nginx@sha256:....
+
+- A imagem ainda existe no disco.
+- Ela ainda está sendo usada por algum container.
+- O Docker não pode removê-la totalmente enquanto houver um container usando-a.
+
+	Remover todas as imagens não referenciadas por containers:
+		docker image prune
+		docker image prune -a
+
+
+
