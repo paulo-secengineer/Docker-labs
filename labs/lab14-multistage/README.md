@@ -1,0 +1,1 @@
+In this lab, I applied multi-stage build techniques to a Go application. Result: Reduction of the image size from 1.23GB (with compilation environment) to only 3.12MB (final image from scratch), increasing security and deployment speed.

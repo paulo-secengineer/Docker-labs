@@ -1,0 +1,8 @@
+FROM golang:1.21
+WORKDIR /app
+ENV  GO111MODULE=off
+COPY main.go .
+
+RUN go build -o app
+CMD ["./app"]
+

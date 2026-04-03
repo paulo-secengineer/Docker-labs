@@ -1,0 +1,10 @@
+FROM golang:1.21  AS builder
+WORKDIR /app
+ENV GO111MODULE=off
+COPY main.go .
+RUN go build -o  app
+
+FROM scratch
+COPY   --from=builder /app/app .
+ENTRYPOINT ["/app"]
+
