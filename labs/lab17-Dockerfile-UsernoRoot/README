@@ -1,0 +1,19 @@
+# Lab 17 - Enterprise Dockerfile & Non-Root Security
+
+Production-grade Dockerfile implementation for Python microservices focusing on security containerization standards, runtime environment management, build arguments, and endpoint health monitoring.
+
+## Features
+
+- Non-Root Execution: Runs container processes using a dedicated unprivileged user (`appuser`).
+- Healthcheck Probes: Native Docker `HEALTHCHECK` configured against dedicated HTTP endpoint (`/health`).
+- Structured Logging: Emits clean JSON formatted logs to stdout for aggregation systems.
+- Graceful Shutdown: Catches `SIGTERM` and `SIGINT` signals for clean socket teardown.
+- Configurable Runtime: Supports build-time arguments (`ARG`) and environment variable overrides (`ENV`).
+
+## Repository Structure
+
+```text
+.
+├── app.py
+├── Dockerfile
+└── README.md
